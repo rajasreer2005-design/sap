@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>{{ title }}</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #222;
+}
+
+header {
+    background: white;
+    padding: 22px 6%;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+}
+
+header h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+}
+
+header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.badge {
+    background: #eef2f7;
+    padding: 8px 12px;
+    height: fit-content;
+    font-weight: bold;
+}
+
+main {
+    width: 90%;
+    max-width: 1150px;
+    margin: 25px auto;
+}
+
+.flow,
+.panel {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    margin-bottom: 20px;
+}
+
+.flow {
+    padding: 15px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.flow span {
+    padding: 7px 10px;
+    background: #f1f3f5;
+    margin: 4px;
+    display: inline-block;
+}
+
+.active {
+    background: #e5edff !important;
+    font-weight: bold;
+}
+
+.kpis {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.kpi {
+    flex: 1;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    padding: 18px;
+}
+
+.kpi small {
+    color: #6b7280;
+}
+
+.kpi h2 {
+    margin: 8px 0 0;
+}
+
+.title {
+    padding: 18px;
+    border-bottom: 1px solid #ddd;
+}
+
+.title h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.title p {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.filters {
+    padding: 15px 18px;
+    border-bottom: 1px solid #ddd;
+}
+
+.filters button {
+    margin-right: 6px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 13px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+th {
+    background: #f8fafc;
+    color: #59636e;
+}
+
+.status {
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.red {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.yellow {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.green {
+    background: #dcfce7;
+    color: #166534;
+}
+
+button {
+    background: #263238;
+    color: white;
+    border: 0;
+    padding: 7px 11px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.detail {
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.ai {
+    margin: 0 20px 20px;
+    padding: 15px;
+    background: #f5f7fb;
+    border-left: 4px solid #34495e;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media(max-width:700px) {
+
+    .kpis {
+        flex-direction: column;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    main {
+        width: 94%;
+        overflow-x: auto;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div>
+
+        <h1>{{ title }}</h1>
+
+        <p>
+            Monitor equipment failures and production downtime
+        </p>
+
+    </div>
+
+    <div class="badge">
+        SAP {{ process }}
+    </div>
+
+</header>
+
+
+<main>
+
+
+<div class="flow">
+
+    <span>Production Plan</span>
+    →
+    <span class="active">Equipment Failure</span>
+    →
+    <span>Maintenance</span>
+    →
+    <span>Production</span>
+
+</div>
+
+
+<div class="kpis">
+
+{% for name, value in kpis %}
+
+<div class="kpi">
+
+    <small>{{ name }}</small>
+
+    <h2>{{ value }}</h2>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+<div class="panel">
+
+<div class="title">
+
+    <h2>Equipment Exceptions</h2>
+
+    <p>
+        Prioritise machines requiring attention
+    </p>
+
+</div>
+
+
+<div class="filters">
+
+    <button onclick="filterMachines('all')">
+        All
+    </button>
+
+    <button onclick="filterMachines('red')">
+        🔴 Red
+    </button>
+
+    <button onclick="filterMachines('yellow')">
+        🟡 Review
+    </button>
+
+    <button onclick="filterMachines('green')">
+        🟢 Monitor
+    </button>
+
+</div>
+
+
+<table>
+
+<tr>
+
+    <th>Machine</th>
+    <th>Equipment</th>
+    <th>Production Loss</th>
+    <th>Issue</th>
+    <th>Status</th>
+    <th>Action</th>
+
+</tr>
+
+
+{% for x in data %}
+
+<tr class="machine-row" data-status="{{ x.status }}">
+
+    <td>{{ x.id }}</td>
+
+    <td>{{ x.entity }}</td>
+
+    <td>{{ "{:,}".format(x.value) }} units</td>
+
+    <td>{{ x.issue }}</td>
+
+    <td>
+
+    {% if x.status == "red" %}
+
+        <span class="status red">
+            ACTION
+        </span>
+
+    {% elif x.status == "yellow" %}
+
+        <span class="status yellow">
+            REVIEW
+        </span>
+
+    {% else %}
+
+        <span class="status green">
+            MONITOR
+        </span>
+
+    {% endif %}
+
+    </td>
+
+    <td>
+
+        <button onclick="analyse('{{ x.id }}')">
+            Analyse
+        </button>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<div class="panel">
+
+<div class="title">
+
+    <h2>AI Recommendation</h2>
+
+    <p>
+        Failure-pattern decision support
+    </p>
+
+</div>
+
+
+<div class="detail">
+
+    <div id="result">
+        Select equipment to view the recommendation.
+    </div>
+
+</div>
+
+
+<div class="ai">
+
+    <strong>Maintenance Action</strong>
+
+    <p id="action">
+        Select equipment and validate its condition.
+    </p>
+
+    <button onclick="takeAction()">
+        Validate Action
+    </button>
+
+</div>
+
+</div>
+
+
+</main>
+
+
+<script>
+
+let selected = "";
+
+
+function filterMachines(status) {
+
+    document.querySelectorAll(".machine-row").forEach(row => {
+
+        row.style.display =
+            status === "all" ||
+            row.dataset.status === status
+            ? ""
+            : "none";
+
+    });
+
+}
+
+
+function analyse(id) {
+
+    selected = id;
+
+    document.getElementById("result").innerText =
+        "Analysing equipment...";
+
+    fetch("/analyse/" + id)
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        document.getElementById("result").innerText =
+            data.text;
+
+        document.getElementById("action").innerText =
+            "Ready for validation.";
+
+    });
+
+}
+
+
+function takeAction() {
+
+    if (!selected) {
+
+        document.getElementById("action").innerText =
+            "Please select equipment first.";
+
+        return;
+
+    }
+
+    fetch("/action/" + selected, {
+        method: "POST"
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        document.getElementById("action").innerText =
+            data.message;
+
+    });
+
+}
+
+</script>
+
+
+</body>
+
+</html>
